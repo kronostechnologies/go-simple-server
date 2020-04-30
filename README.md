@@ -7,11 +7,13 @@ Configuration
 ### config.yaml
 ```
 listen: ":8888"
+loginmatched: true
 hosts:
   foobar.example:
     body: "Hello World"
   foo.example:
     redirect: "https://bar.example/foo"
+    log: true
   bar.example:
     redirect: "https://foobar.example{{ .RequestURI }}"
   root.example:
@@ -24,6 +26,6 @@ hosts:
 ### Defaults
 - Default return code is 200 for an existing host.
 - When a redirect rule is present, defaults to HTTP 301.
-- Host `localhost` defaults to HTTP 200 with body response `ok`.
+- Host `status` defaults to HTTP 200 with body response `ok` (for healthchecks).
 - Unknown hosts return HTTP 404.
 - Listens on `0.0.0.0:80`

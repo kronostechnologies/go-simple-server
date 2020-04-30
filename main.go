@@ -13,8 +13,9 @@ import (
 )
 
 type Config struct {
-	Listen string
-	Hosts  map[string]*ResponseConfig
+	Listen       string
+	Hosts        map[string]*ResponseConfig
+	LogUnmatched bool
 }
 
 type ResponseConfig struct {
@@ -22,6 +23,7 @@ type ResponseConfig struct {
 	Code     int
 	Headers  map[string]string
 	Redirect string
+	Log      bool
 }
 
 type Response struct {
@@ -29,6 +31,7 @@ type Response struct {
 	Code     int
 	Headers  map[string]string
 	Redirect *template.Template
+	Log      bool
 }
 
 type Redirection struct {
@@ -69,7 +72,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	requestString := host + r.RequestURI
 
 	if !found {
-		log.Printf("%s: %d", host, 404)
+		if logUnmatched {
+			log.Printf("%s: %d", host, 404)
+		}
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -94,7 +99,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, redirectString, response.Code)
 
-		log.Printf("%s: %d (%s)", requestString, response.Code, redirectString)
+		if response.Log {
+			log.Printf("%s: %d (%s)", requestString, response.Code, redirectString)
+		}
 	} else {
 		w.WriteHeader(response.Code)
 
@@ -103,22 +110,30 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(we)
 		}
 
-		log.Printf("%s: %d", requestString, response.Code)
+		if response.Log {
+			log.Printf("%s: %d", requestString, response.Code)
+		}
 	}
 }
 
 var responses = make(map[string]*Response)
+var logUnmatched bool
 
 func main() {
 	var config Config
-	yamlFile, err := ioutil.ReadFile("config.yaml")
-	if err != nil {
-		panic(err)
+	yamlFile, ye := ioutil.ReadFile("config.yaml")
+	if ye != nil {
+		panic(ye)
 	}
 
-	err = yaml.Unmarshal(yamlFile, &config)
+	ue := yaml.Unmarshal(yamlFile, &config)
+	if ue != nil {
+		panic(ue)
+	}
 
-	AddResponse("localhost", &ResponseConfig{Body: "ok"})
+	logUnmatched = config.LogUnmatched
+
+	AddResponse("status", &ResponseConfig{Body: "ok", Log: false})
 
 	for h, r := range config.Hosts {
 		log.Printf("configured %s\n", h)
