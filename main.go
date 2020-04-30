@@ -59,6 +59,7 @@ func AddResponse(host string, c *ResponseConfig) {
 		Body:     c.Body,
 		Code:     code,
 		Headers:  c.Headers,
+		Log:      c.Log,
 		Redirect: redirect,
 	}
 
