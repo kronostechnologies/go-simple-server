@@ -69,6 +69,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	requestString := host + r.RequestURI
 
 	if !found {
+		log.Printf("%s: %d", host, 404)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
