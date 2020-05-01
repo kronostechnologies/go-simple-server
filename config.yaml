@@ -1,0 +1,20 @@
+listen: ":8888"
+logunmatched: true
+rules:
+  - hosts:
+    - foobar.example
+    - www.foobar.example
+    body: "Hello World"
+  - hosts:
+    - foo.example
+    redirect: "https://bar.example/foo"
+    log: true
+  - hosts:
+    - bar.example
+    redirect: "https://foobar.example{{ .RequestURI }}"
+  - hosts:
+    - root.example
+    redirect: "https://domain.example{{ .RequestURI }}"
+    code: 302
+    headers:
+      Strict-Transport-Security: "max-age=63072000; includeSubDomains; preload"

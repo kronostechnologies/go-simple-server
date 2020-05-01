@@ -7,16 +7,21 @@ Configuration
 ### config.yaml
 ```
 listen: ":8888"
-loginmatched: true
-hosts:
-  foobar.example:
+logunmatched: true
+rules:
+  - hosts:
+    - foobar.example
+    - www.foobar.example
     body: "Hello World"
-  foo.example:
+  - hosts:
+    - foo.example
     redirect: "https://bar.example/foo"
     log: true
-  bar.example:
+  - hosts:
+    - bar.example
     redirect: "https://foobar.example{{ .RequestURI }}"
-  root.example:
+  - hosts:
+    - root.example
     redirect: "https://domain.example{{ .RequestURI }}"
     code: 302
     headers:

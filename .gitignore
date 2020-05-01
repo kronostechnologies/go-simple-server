@@ -1,5 +1,4 @@
 .idea/
 *.iml
-config.yaml
 go-simple-server
 simple-server

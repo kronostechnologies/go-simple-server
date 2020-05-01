@@ -14,11 +14,12 @@ import (
 
 type Config struct {
 	Listen       string
-	Hosts        map[string]*ResponseConfig
+	Rules        []*ResponseConfig
 	LogUnmatched bool
 }
 
 type ResponseConfig struct {
+	Hosts    []string
 	Body     string
 	Code     int
 	Headers  map[string]string
@@ -40,12 +41,12 @@ type Redirection struct {
 	URL        *url.URL
 }
 
-func AddResponse(host string, c *ResponseConfig) {
+func AddResponse(c *ResponseConfig) {
 	var redirect *template.Template
 	var code int
 
 	if c.Redirect != "" {
-		redirect = template.Must(template.New(host).Parse(c.Redirect))
+		redirect = template.Must(template.New(c.Hosts[0]).Parse(c.Redirect))
 		code = 301
 	} else {
 		code = 200
@@ -63,7 +64,9 @@ func AddResponse(host string, c *ResponseConfig) {
 		Redirect: redirect,
 	}
 
-	responses[host] = r
+	for _, host := range c.Hosts {
+		responses[host] = r
+	}
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,11 +137,11 @@ func main() {
 
 	logUnmatched = config.LogUnmatched
 
-	AddResponse("status", &ResponseConfig{Body: "ok", Log: false})
+	AddResponse(&ResponseConfig{Hosts: []string{"status"}, Body: "ok", Log: false})
 
-	for h, r := range config.Hosts {
-		log.Printf("configured %s\n", h)
-		AddResponse(h, r)
+	for _, r := range config.Rules {
+		log.Printf("configured %v\n", r.Hosts)
+		AddResponse(r)
 	}
 
 	log.Printf("listening on %s\n", config.Listen)
